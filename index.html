@@ -1,0 +1,233 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="stylesheet" href="style.css">
+  <title>Relatório Operacional - Trânsito</title>
+</head>
+<body>
+  <h2>🚧🚦 RELATÓRIO OPERACIONAL - TRÂNSITO 🚦🚧</h2>
+
+  <form id="relatorioForm">
+    <!-- Etapa 1 -->
+    <div class="step active">
+      <label>Data:</label>
+      <input type="date" name="data" id="data" required />
+      <label>Dia da Semana:</label>
+      <select name="dia_semana" id="diaSemana" required>
+        <option value="">-- Selecione --</option>
+        <option value="segunda-feira">Segunda-feira</option>
+        <option value="terça-feira">Terça-feira</option>
+        <option value="quarta-feira">Quarta-feira</option>
+        <option value="quinta-feira">Quinta-feira</option>
+        <option value="sexta-feira">Sexta-feira</option>
+        <option value="sábado">Sábado</option>
+        <option value="domingo">Domingo</option>
+      </select>
+      <label>Equipe PM:</label>
+      <input type="text" name="equipe" required />
+    </div>
+
+    <!-- Etapa 2 -->
+    <div class="step">
+      <label>ROST:</label>
+      <input type="number" name="rost" min="0" value="00" />
+      <label>Termo de declaração:</label>
+      <input type="number" name="termo" min="0" value="00"/>
+      <label>Croqui:</label>
+      <input type="number" name="croqui" min="0" value="00"/>
+    </div>
+
+    <!-- Etapa 3 -->
+    <div class="step">
+      <label>Autos de infrações:</label>
+      <input type="number" name="autos" min="0" value="00"/>
+      <label>ARD CRLV_e:</label>
+      <input type="number" name="crlv" min="0" value="00"/>
+      <label>ARV Motocicleta:</label>
+      <input type="number" name="arv_moto" min="0" value="00"/>
+      <label>ARV Veículo Artesanal:</label>
+      <input type="number" name="arv_artesanal" min="0" value="00"/>
+    </div>
+
+    <!-- Etapa 4 -->
+     <div class="step">
+      <label>ARV Veículo Automotor:</label>
+      <input type="number" name="arv_automotor" min="0" value="00"/>
+      <label>ARV Bicicleta:</label>
+      <input type="number" name="arv_bike" min="0" value="00"/>
+      <label>Teste de Alcoolemia:</label>
+      <input type="number" name="alcoolemia" min="0" value="00"/>
+      <label>dTCACP:</label>
+      <input type="number" name="tcacp" min="0" value="00"/>
+     </div>
+
+    <!-- Etapa 5 -->
+    <div class="step">
+      <label>Veículo encaminhado à DEPAC:</label>
+      <input type="number" name="depac" min="0" value="00"/>
+      <label>2 Rodas abordadas:</label>
+      <input type="number" name="rodas2" min="0" value="00"/>
+      <label>4 Rodas abordadas:</label>
+      <input type="number" name="rodas4" min="0" value="00"/>
+      <label>Cidadãos abordados:</label>
+      <input type="number" name="cidadaos" min="0" value="00"/>
+    </div>
+
+    <!-- Etapa 6 -->
+    <div class="step">
+      <label>Boletim de Ocorrência:</label>
+      <input type="number" name="bo_ocorrencia" min="0" value="00"/>
+      <label>Boletim de Atendimento:</label>
+      <input type="number" name="bo_atendimento" min="0" value="00"/>
+    </div>
+
+    <div class="buttons">
+      <button type="button" id="prevBtn" onclick="nextStep(-1)" disabled>Voltar</button>
+      <button type="button" id="nextBtn" onclick="nextStep(1)">Próximo</button>
+    </div>
+  </form>
+
+  <div id="resumo" style="display: none;"></div>
+
+  <script>
+    const steps = document.querySelectorAll(".step");
+    const nextBtn = document.getElementById("nextBtn");
+    const prevBtn = document.getElementById("prevBtn");
+    const resumo = document.getElementById("resumo");
+    let currentStep = 0;
+
+    function showStep(n) {
+      steps.forEach((step, index) => {
+        step.classList.toggle("active", index === n);
+      });
+      prevBtn.disabled = n === 0;
+      nextBtn.textContent = n === steps.length - 1 ? "Concluir" : "Próximo";
+    }
+
+    function nextStep(n) {
+      if (n === 1 && currentStep === steps.length - 1) {
+        exibirResumo();
+        return;
+      }
+
+      currentStep += n;
+      showStep(currentStep);
+    }
+
+    function exibirResumo() {
+      const form = document.getElementById("relatorioForm");
+      const dados = new FormData(form);
+      let texto = "🚧🚦 PELOTÃO DE TRÂNSITO 🚦🚧\n\nRELATÓRIO OPERACIONAL DIÁRIO:\n\n";
+
+      for (let [key, value] of dados.entries()) {
+        const nomeFormatado = key.replace(/_/g, " ").toUpperCase();
+        texto += `${nomeFormatado}: ${value || "00"}\n`;
+      }
+
+      form.style.display = "none";
+      resumo.style.display = "block";
+      resumo.textContent = texto;
+    }
+        // Atualiza o dia da semana com base na data
+    document.getElementById("data").addEventListener("change", function () {
+      const dataSelecionada = this.value;
+      if (!dataSelecionada) return;
+
+      const diasSemana = [
+        "domingo",
+        "segunda-feira",
+        "terça-feira",
+        "quarta-feira",
+        "quinta-feira",
+        "sexta-feira",
+        "sábado"
+      ];
+
+      const dataObj = new Date(dataSelecionada + "T00:00"); // força fuso horário correto
+      const diaIndex = dataObj.getDay(); // 0 (domingo) a 6 (sábado)
+      const diaTexto = diasSemana[diaIndex];
+
+      // Preenche automaticamente o select
+      const select = document.getElementById("diaSemana");
+      for (let option of select.options) {
+        if (option.value === diaTexto) {
+          option.selected = true;
+          break;
+        }
+      }
+    });
+
+    showStep(currentStep);
+  </script>
+  <!-- ...continuando do seu código -->
+<div id="resumo" style="display: none;"></div>
+<div id="copiarDiv" style="display: none; margin-top: 10px;">
+  <button onclick="copiarRelatorio()">Copiar Relatório</button>
+  <button onclick="voltarFormulario()">Voltar ao Formulário</button>
+</div>
+
+<script>
+  const copiarDiv = document.getElementById("copiarDiv");
+
+  function showStep(n) {
+    steps.forEach((step, index) => {
+      step.classList.toggle("active", index === n);
+    });
+    prevBtn.disabled = n === 0;
+    nextBtn.textContent = n === steps.length - 1 ? "Concluir" : "Próximo";
+  }
+
+  function nextStep(n) {
+    if (n === 1 && currentStep === steps.length - 1) {
+      exibirResumo();
+      return;
+    }
+
+    currentStep += n;
+    showStep(currentStep);
+  }
+  function exibirResumo() {
+    const form = document.getElementById("relatorioForm");
+    const dados = new FormData(form);
+    let texto = "🚧🚦 PELOTÃO DE TRÂNSITO 🚦🚧\n\nRELATÓRIO OPERACIONAL DIÁRIO:\n\n";
+
+    for (let [key, value] of dados.entries()) {
+      if (key === "data" && value) {
+        const [ano, mes, dia] = value.split("-");
+        value = `${dia}/${mes}/${ano}`;
+      }
+
+      const nomeFormatado = key.replace(/_/g, " ").toUpperCase();
+      const valorFormatado = isNaN(value) ? value : value.padStart(2, '0');
+
+      texto += `${nomeFormatado}: ${valorFormatado}\n`;
+    }
+
+    form.style.display = "none";
+    resumo.style.display = "block";
+    copiarDiv.style.display = "block";
+    resumo.textContent = texto;
+  }
+
+  function copiarRelatorio() {
+    const texto = resumo.textContent;
+    navigator.clipboard.writeText(texto).then(() => {
+      alert("Relatório copiado para a área de transferência!");
+    }).catch(err => {
+      alert("Erro ao copiar: " + err);
+    });
+  }
+  showStep(currentStep);
+  function voltarFormulario() {
+  resumo.style.display = "none";
+  copiarDiv.style.display = "none";
+  document.getElementById("relatorioForm").style.display = "block";
+  currentStep = 0;
+  showStep(currentStep);
+}
+</script>
+</body>
+</html>
